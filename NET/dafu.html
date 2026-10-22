@@ -98,14 +98,38 @@ main{max-width:1120px;padding:28px 32px 48px}
 .out{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;padding:0 2px}
 .ls{grid-template-columns:repeat(3,1fr)}
 }
+body:not(.mode1) .m1{display:none}
+body.mode1 .m0{display:none}
+.fl input.rg{flex:1;min-width:140px;width:auto;padding:0;border:0;background:none;accent-color:var(--pur)}
+.rt{display:grid;gap:6px;margin-top:8px}
+.rw{display:block;width:100%;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--tx);cursor:pointer;font-size:13.5px;line-height:1.45}
+.rw.on{border-color:var(--pur);background:color-mix(in srgb,var(--pur) 14%,transparent)}
+.rw b{font-size:16px;font-variant-numeric:tabular-nums}
+.rw small{display:block;color:var(--mu);font-size:12px}
+.ngs{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.ngs li{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;background:var(--card)}
+.ng>summary{margin-top:0;padding:12px 14px;border:2px solid var(--gold);border-radius:12px;color:var(--tx);font-weight:800;background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.ngw{margin-top:22px}
+.ngs li.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
+.gb{border:1px solid var(--line);background:transparent;color:inherit;border-radius:6px;min-width:26px;height:26px;padding:0 4px;cursor:pointer;font-size:14px;line-height:1}
+.gadd{border:0;background:none;color:inherit;cursor:pointer;font:inherit;padding:0}
+.mk{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.mk[hidden]{display:none}
+.mb{max-width:420px;width:100%;background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:16px;padding:20px}
+.mb p{margin:0 0 16px;line-height:1.7}
+.mb .ft{display:flex;justify-content:flex-end}
+.mb .go{padding:10px 18px}
+.fl select.x{font-size:15px;font-weight:700;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--in);color:var(--tx);max-width:100%}
 </style>
 </head>
 <body>
+<div class="mk" id="notice" role="dialog" aria-modal="true" aria-label="提示"><div class="mb"><p>达芙外规金均估价仅为经验参考模型！红件实际价值浮动大，预设8w/10w并非真实定值，金均与紫件数只能缩小区间，无法精确算出真实货值，存在误差，容易高估拍亏。</p><div class="ft"><button class="go" id="nok">不再提示</button></div></div></div>
 <main>
 <header class="top">
 <div><h1>达芙拍卖估价器</h1>
-<p class="sub">最终估价 = 金红均价 + 所见大红 / 大金的加成（单位：万）</p></div>
+<p class="sub">最终估价 = 金红均价 + 所见大红 / 大金的加成（单位：万；金均模式下金均与金藏品价格直接用完整数字）</p></div>
 <div class="tools">
+<span class="seg" role="group" aria-label="模式"><button data-md="0">固定倍率</button><button data-md="1">金均仪器</button></span>
 <span class="seg" role="group" aria-label="主题"><button data-th="light">浅色</button><button data-th="dark">深色</button><button data-th="auto">跟随系统</button></span>
 <span class="seg lay" role="group" aria-label="桌面布局"><button data-ly="0">左输入 · 右报价</button><button data-ly="1">左报价 · 右输入</button></span>
 </div>
@@ -126,19 +150,36 @@ main{max-width:1120px;padding:28px 32px 48px}
 <button class="rs" data-r="1">重置本局</button>
 </section>
 
+<section class="step m1">
+<h2>金均仪器</h2>
+<p class="hint">直接填金均仪器读出的完整数字（不用换算成万，小数位数不限）。系统在全部金品（含新增）里反推：每种金品最多叠加 3 件，且至少由 2 种金品组合；大饼、乔望尼金雕像默认少用，其余小金额金品优先。底部「所见大金」里加入的金品会按原价固定算进组合。估价 = 金总值 + 红件数 × 倍率 + 所见大红加成。</p>
+<div class="af"><input id="avg" type="number" inputmode="decimal" min="0" step="any" placeholder="金均（完整数字），如 45321 或 45321.5"></div>
+
+<button class="go" id="calc" style="width:100%;margin-top:10px">开始计算</button><p class="am" id="cm"></p>
+</section>
+
 <section class="step">
-<h2>所见大红 / 大金</h2>
-<p class="hint">看到哪件就点哪件；同一件出现多个，点 ＋ 加数量。名称下面的数字是它的加成。</p>
+<h2><span class="m0">所见大红 / 大金</span><span class="m1">所见大红</span></h2>
+<p class="hint">看到哪件就点哪件；同一件出现多个，点 ＋ 加数量。名称下面的数字是它的加成。<span class="m1">金藏品请在页面最下方「所见大金」里加入。</span></p>
 <p class="lb">大红</p><div class="ls" id="listR"></div>
-<p class="lb">大金</p><div class="ls" id="listG"></div>
+<p class="lb m0">大金</p><div class="ls m0" id="listG"></div>
 <p class="sm" id="sm"></p>
-<details class="ad"><summary>＋ 添加列表里没有的大红 / 大金</summary>
+<details class="ad"><summary><span class="m0">＋ 添加列表里没有的大红 / 大金</span><span class="m1">＋ 添加列表里没有的大红</span></summary>
 <div class="af"><input id="cn" placeholder="藏品名称" maxlength="12">
-<div class="cc"><button class="r on" data-c="r">大红</button><button class="g" data-c="g">大金</button></div>
+<div class="cc"><button class="r on" data-c="r">大红</button><button class="g m0" data-c="g">大金</button></div>
 <input id="cv" type="number" inputmode="decimal" min="0" placeholder="加成（万）">
 <p class="am" id="am"></p><button class="go" id="go">添加并选中</button></div>
 </details>
 </section>
+
+<section class="step m1"><details class="ad ng"><summary id="gsum">✨ 所见大金 / 新金藏品（点击展开）</summary>
+<p class="hint" style="margin-top:10px">看到哪件金藏品，就搜索后加入；加入的金品按原价（完整数字）固定计入，并重新用于组合反推（加入、增减、移除后会自动重新计算）。每种最多 3 件。</p>
+<p class="lb">已加入的大金</p><ul class="ngs" id="gsel"></ul>
+<div class="af"><input id="gq" placeholder="搜索金藏品：名称或价格，如 大饼 或 4500"></div>
+<ul class="ngs" id="gres"></ul>
+<p class="lb">新增金藏品（价格表里没有的）</p><ul class="ngs" id="ngn"></ul>
+<div class="af"><input id="nn" placeholder="新金藏品名称" maxlength="14"><input id="np" type="number" inputmode="decimal" min="0" step="any" placeholder="价格（完整数字），如 35000"><p class="am" id="nm"></p><button class="go" id="ng">添加新金藏品</button></div>
+<details class="ad"><summary>过往金藏品（内置价格表，点击展开）</summary><ul class="ngs" id="ngo"></ul></details></details></section>
 
 
 
@@ -148,38 +189,47 @@ main{max-width:1120px;padding:28px 32px 48px}
 <p class="k">最终估价（万）</p>
 <div class="est" id="est">—</div>
 <div class="row"><span>金红数</span><b id="gr">—</b></div>
+<div class="row m1"><span>金总值</span><b id="gv">—</b></div>
+<div class="row m1"><span>红件数 × 倍率</span><b id="rc">—</b></div>
+<div class="row m1"><span>最终估价（完整数字）</span><b id="full">—</b></div>
 <div class="row"><span>金红均价倍率</span><span class="chips" id="chips" style="margin:0"></span></div>
-<div class="row"><span>金红均价（金红数 × 倍率）</span><b id="base">—</b></div>
+<div class="row"><span id="bl">金红均价（金红数 × 倍率）</span><b id="base">—</b></div>
 <div class="row"><span>大红 / 大金加成</span><b id="add">0</b></div>
 <div class="row"><span>建议出价（<span id="tn">稳妥</span>）</span><b id="bidv">—</b></div>
 <div class="row"><span>两种倍率对照</span><b id="alt">—</b></div>
 <p class="warn" id="warn"></p>
 <p class="fm" id="fm"></p>
+<p class="fm m1" id="combo"></p>
 </section>
 
 <section class="cd">
 <h2>估价浮动与建议出价</h2>
 <p class="hint">估价可能溢出或贬值，图中按 ±<span id="fv">—</span> 万展开，虚线是建议出价。</p>
+<div class="fl m1"><label for="gf">浮动区间 ±<b id="gfv">10</b> 万</label><input id="gf" class="rg" type="range" min="0" max="60" step="1" value="10"></div>
+<div class="fl m0"><label for="gf0">浮动区间 ±<b id="gf0v">—</b> 万</label><input id="gf0" class="rg" type="range" min="0" max="200" step="1" value="0"></div>
 
 <div id="chart"></div>
 <p class="lb">建议出价（点选一档）</p>
 <div class="tiers" id="tiers"></div>
 <p class="sm" id="bd"></p>
-<p class="hint" style="margin-top:8px">保守 = 估价 − 浮动；稳妥 = 估价 − 浮动的一半；激进 = 估价。浮动 = 估价 × 浮动比例，且不超过上限，默认 80% 和 200 万。这是参考算法，不是游戏内置公式。</p>
-<details class="ad"><summary>高级设置：浮动比例与上限（一般不用调）</summary>
-<div class="fl"><label for="pct">浮动比例 %</label><input id="pct" type="number" inputmode="numeric" min="0" placeholder="80"><label for="cap">上限（万）</label><input id="cap" type="number" inputmode="numeric" min="0" placeholder="200"></div>
-</details>
+<p class="hint m1" style="margin-top:8px">金均模式：浮动默认溢出 / 贬值各 10 万，拖动滑块可调；金均低于 25000 时出价自动降一档。</p>
+<p class="hint m0" style="margin-top:8px">保守 = 估价 − 浮动；稳妥 = 估价 − 浮动的一半；激进 = 估价。浮动默认 = 估价 × 80%（最多 200 万），可拖动上方滑块调整，范围 0–200 万。这是参考算法，不是游戏内置公式。</p>
+
 </section>
 
 </div>
 </div>
+<section class="cd m1"><h2>反推结果表</h2>
+<p class="hint">点「开始计算」后列出多种金均相同或相近的反推方案（最多 20 条），默认按估价从高到低排序，点选一条作为最终估价，默认取平均。每条都标出误差（保留一位小数）；估价同时给出「万」和完整数字。</p>
+<div class="rt" id="rtab"></div></section>
+
 <button class="rs" data-r="1">重置本局</button>
 <p class="note">金红均价 = 金红数 × 8 或 10，再加上所见大红 / 大金的加成。列表来自截图，缺的可以自己添加，添加的会保存在本机。</p>
 </main>
 <script>
 const K='dafu-auction-v3';
 const BASE=[['永恒之心','r',120],['古旧手提箱','r',40],['储钱小哼','r',40],['烟云盏','r',40],['未知门禁卡','r',20],['白龙王','r',20],['曜目权柄','r',10],['酷辣辣辣条','r',10],['一簇幽火','r',10],['九格小食','r',10],['便携式折叠屏','r',10],['永生花环','r',10],['乔望尼金雕像','g',10],['大饼','g',10]];
-const S={total:null,purple:null,mult:8,pick:{},custom:[],cap:200,pct:80,flip:0,tier:1,v:2};
+const S={total:null,purple:null,mult:8,pick:{},custom:[],cap:200,pct:80,flip:0,tier:1,v:2,mode:0,avg:null,dp:2,gf:10,tl:500,f0:null,newG:[],gpick:{},au:1};
 let cc='r';
 try{const o=JSON.parse(localStorage.getItem(K)||'{}');
  if(Number.isInteger(o.total)&&o.total>=0)S.total=o.total;
@@ -189,6 +239,14 @@ try{const o=JSON.parse(localStorage.getItem(K)||'{}');
  if(Number.isInteger(o.pct)&&o.pct>=0)S.pct=o.pct;
  if(o.flip===1)S.flip=1;
  if([0,1,2].includes(o.tier))S.tier=o.tier;
+ if(o.mode===1)S.mode=1;
+ if(o.au===1&&typeof o.avg==="number"&&o.avg>=0)S.avg=o.avg;
+ if(o.gpick&&typeof o.gpick==="object")Object.keys(o.gpick).forEach(k=>{const q=o.gpick[k];if(Number.isInteger(q)&&q>0)S.gpick[k]=Math.min(q,3)});
+ if(Number.isInteger(o.dp)&&o.dp>=2&&o.dp<=4)S.dp=o.dp;
+ if(Number.isInteger(o.gf)&&o.gf>=0&&o.gf<=60)S.gf=o.gf;
+
+  if(Number.isInteger(o.f0)&&o.f0>=0&&o.f0<=200)S.f0=o.f0;
+ if(Array.isArray(o.newG))S.newG=o.newG.filter(c=>Array.isArray(c)&&typeof c[0]==="string"&&Number.isFinite(c[1])&&c[1]>0);
  if(Array.isArray(o.pick))o.pick.forEach(x=>{if(typeof x==='string')S.pick[x]=1});
  else if(o.pick&&typeof o.pick==='object')Object.keys(o.pick).forEach(k=>{const q=o.pick[k];if(Number.isInteger(q)&&q>0)S.pick[k]=Math.min(q,99)});
  if(Array.isArray(o.custom))S.custom=o.custom.filter(c=>Array.isArray(c)&&typeof c[0]==='string'&&(c[1]==='r'||c[1]==='g')&&Number.isFinite(c[2]));}catch(e){}
@@ -208,73 +266,218 @@ try{const t=localStorage.getItem(TK);if(t==='light'||t==='dark')T=t}catch(e){}
 function theme(t){T=t;const r=document.documentElement;if(t==='auto')r.removeAttribute('data-theme');else r.dataset.theme=t;try{localStorage.setItem(TK,t)}catch(e){}}
 function ui(){
  $('cols').classList.toggle('sw',S.flip===1);
+ document.body.classList.toggle('mode1',S.mode===1);
+ document.querySelectorAll('[data-md]').forEach(b=>{const on=+b.dataset.md===S.mode;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
  document.querySelectorAll('[data-th]').forEach(b=>{const on=b.dataset.th===T;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
  document.querySelectorAll('[data-ly]').forEach(b=>{const on=+b.dataset.ly===S.flip;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
 }
+const PR=[['乔望尼金雕像',271827],['大饼',202798],['罐装随心泥',124816],['金龙鱼',111111],['赤色来电',101554],['条纹椰',101537],['琉璃尾',101403],['片刻驻足',88888],['双颈玉瓶-白',80754],['名为显赫的权杖',77777],['映像机',76591],['青花花瓶',62456],['澄空之眼',60285],['算力面包',60040],['万有星仪',51077],['灿金环',38316],['巡哨-干练精英',37558],['莓果总汇奶油长棍面包',30452],['浅绯祈手办',30264],['海盐心迷宫',30211],['「强身好伙伴！」',27246],['轮椅模型',27159],['絮语之种',22336],['心猎铁骑L3-以当千',22297],['万花筒',21012],['缠枝花纹筷',20238],['凝华海露',19926],['「截云」',18288],['名为尊贵的冠冕',18193],['万能适配器',18031],['生春鞘',15309],['蓝焰火花塞',15108],['盈雪点翠',15037],['气象指南',15024],['黄釉雅器',13632],['骑士车贴',12164],['「方盒科技」电容笔',12116],['「方盒科技」充电宝',11981],['自由数据线',11974],['绯红宝石',9938],['猫丸秘制豚骨拉面',9040],['桂冠',7648],['大满贯手握',7610],['缄默花瓣',7547],['「方盒科技」智能手表',7500],['海星',5555],['第23页',5047],['光之方',5041],['落日珍珠',4975],['心猎铁骑L1-必杀一击',22847],['心猎铁骑L2-闪焰冲锋',22770]];
+const AP=()=>PR.concat(S.newG);let RES=null,SEL=-1;
+function mkRnd(seed){let x=seed>>>0;return()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296}}
+// 反推：每种金品最多叠加 3 件、至少 2 种金品组合、已加入的大金按原价固定计入；单位均为完整数字
+const BIG=150000;
+function tables(P,LO,HI,cap){
+ const m=P.length,MX=[],MN=[];
+ for(let i=m;i>=0;i--){
+  MX[i]=new Array(cap+1).fill(-Infinity);MN[i]=new Array(cap+1).fill(Infinity);
+  if(i===m){MX[i][0]=0;MN[i][0]=0;continue}
+  for(let r=0;r<=cap;r++)for(let c=LO[i];c<=HI[i]&&c<=r;c++){
+   const hi=MX[i+1][r-c],lo=MN[i+1][r-c];
+   if(hi>-Infinity&&hi+P[i]*c>MX[i][r])MX[i][r]=hi+P[i]*c;
+   if(lo<Infinity&&lo+P[i]*c<MN[i][r])MN[i][r]=lo+P[i]*c;
+  }
+ }
+ return [MX,MN];
+}
+function pass(gr,A,P,ID,LO,HI,seed){
+ const m=P.length,cap=Math.min(gr,60),F=LO.reduce((a,b)=>a+b,0),n0=Math.max(F,cap>=2?2:1),tb=tables(P,LO,HI,cap),MX=tb[0],MN=tb[1],
+  rnd=mkRnd(20261022+seed),t0=performance.now(),per=[],WL=[20,100,500,3000,10000,30000,50000,100000,300000,Infinity];let found=false;
+ for(let n=n0;n<=cap;n++){
+  const T=n*A,sols=[],seen=new Set(),cnt=new Array(m).fill(0),dl=t0+1500*(n-n0)/Math.max(1,cap-n0);
+  let nodes=0,w=0;
+  const rec=(i,r,sum)=>{
+   if(sols.length>=4||nodes>8000)return;
+   if(sum+MX[i][r]<T-w||sum+MN[i][r]>T+w)return;
+   if(r===0){
+    let k=0,key='';for(let x=0;x<m;x++)if(cnt[x]){k++;key+=x+':'+cnt[x]+','}
+    const e=sum-T;
+    if(k>=2&&Math.abs(e)<=w&&!seen.has(key)){seen.add(key);const c=[];for(let x=0;x<m;x++)for(let z=0;z<cnt[x];z++)c.push(ID[x]);sols.push({n:n,k:k,e:e,sum:sum,c:c,key:n+'|'+key})}
+    return;
+   }
+   if(i>=m)return;
+   if(++nodes%128===0&&found&&performance.now()>dl)nodes=1e9;
+   const o=[];for(let c=LO[i];c<=HI[i]&&c<=r;c++)o.push(c);
+   for(let x=o.length-1;x>0;x--){const y=Math.floor(rnd()*(x+1)),t=o[x];o[x]=o[y];o[y]=t}
+   for(const c of o){cnt[i]=c;rec(i+1,r-c,sum+P[i]*c)}
+   cnt[i]=0;
+  };
+  for(const wa of WL){if(found&&performance.now()>dl)break;w=n*wa;nodes=0;rec(0,n,0);if(sols.length)break}
+  if(sols.length)found=true;
+  per.push(sols);
+ }
+ return per;
+}
+const gsig=()=>Object.keys(S.gpick).sort().map(k=>k+'*'+S.gpick[k]).join(',');
+const rkey=(gr,A)=>gr+'|'+A+'|'+AP().length+'|'+gsig();
+// 套用「均价计算器」的规则：组合均价 = 总价 ÷ 件数，与读数比较，相差最小的排前面，相差一样则件数少的在前
+function infer(gr,A){
+ const L=AP(),srt=L.map((x,i)=>[x[1],i]).sort((a,b)=>b[0]-a[0]),P=srt.map(x=>x[0]),ID=srt.map(x=>x[1]);
+ const LO=ID.map(j=>Math.min(3,S.gpick[L[j][0]]||0)),F=LO.reduce((a,b)=>a+b,0);
+ if(F>gr)return {c:[],ex:false,L:L,A:A,key:rkey(gr,A),msg:'已加入的大金共 '+F+' 件，超过金红数 '+gr+'，请核对。'};
+ const H=b=>LO.map((lo,x)=>Math.max(lo,P[x]>=BIG?b:3));
+ let per=pass(gr,A,P,ID,LO,H(0),0);
+ const tot=per.reduce((a,l)=>a+l.length,0);
+ if(tot<4){
+  const p2=pass(gr,A,P,ID,LO,H(1),7);
+  per=p2.map((l,i)=>{const have=new Set((per[i]||[]).map(r=>r.key));return (per[i]||[]).concat(l.filter(r=>!have.has(r.key)))});
+ }
+ const ae=r=>Math.abs(r.e)/r.n,cmp=(a,b)=>ae(a)-ae(b)||a.n-b.n,best=[],rest=[];
+ per.forEach(l=>{l.sort(cmp);if(l[0])best.push(l[0]);for(let i=1;i<l.length;i++)rest.push(l[i])});
+ best.sort(cmp);rest.sort(cmp);
+ const c=best.slice(0,20).concat(rest.slice(0,Math.max(0,20-best.length)));
+ c.sort(cmp);c.forEach((r,i)=>{r.id=i});
+ return {c:c,ex:c.length>0,L:L,A:A,key:rkey(gr,A)};
+}
+function runCalc(){
+ const gr=(S.total!==null&&S.purple!==null)?S.total-S.purple:null;
+ if(gr===null||gr<1||S.avg===null){RES=null;return false}
+ RES=infer(gr,S.avg);SEL=-1;return RES.msg||true;
+}
+const rng=a=>{const o=[];let i=0;while(i<a.length){let j=i;while(j+1<a.length&&a[j+1]===a[j]+1)j++;o.push(j>i?a[i]+'–'+a[j]:''+a[i]);i=j+1}return o.join('、')};
+function drawRes(rows,gr,add,m){
+ if(!rows.length){$('rtab').innerHTML='<p class="hint">'+(RES?(RES.msg||'暂时没有可用的组合，请核对金红数和金均读数。'):'填好读数后点「开始计算」，这里会列出多种反推方案。')+'</p>';return}
+ const L=RES.L,A=RES.A,raw=r=>r.sum/10000+(gr-r.n)*m+add,avgE=Math.round(rows.reduce((a,r)=>a+raw(r),0)/rows.length),avgF=Math.round(rows.reduce((a,r)=>a+raw(r),0)/rows.length*10000),sg=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(1);
+ let h='<button class="rw'+(SEL<0?' on':'')+'" data-s="-1"><b>平均 '+avgE+' 万</b>（≈ '+avgF+'）<small>'+rows.length+' 种方案取平均（默认），按估价从高到低排列</small></button>';
+ rows.forEach((r,i)=>{const ct={};r.c.forEach(j=>{ct[j]=(ct[j]||0)+1});
+  const av=r.sum/r.n,names=Object.keys(ct).sort((a,b)=>L[b][1]-L[a][1]).map(j=>esc(L[j][0])+' '+L[j][1]+(ct[j]>1?' ×'+ct[j]:'')+(S.gpick[L[j][0]]?'（已加入）':'')).join(' + ');
+  h+='<button class="rw'+(SEL===r.id?' on':'')+'" data-s="'+r.id+'"><b>方案 '+(i+1)+' · 估价 '+Math.round(raw(r))+' 万</b>（完整 '+Math.round(raw(r)*10000)+'）　金 '+r.n+' 件 · 红 '+(gr-r.n)+' 件<small>'+names+'<br>总价 '+r.sum+' ÷ '+r.n+' 件 = 组合均价 '+av.toFixed(1)+'；读数 '+A+'；误差 '+sg(av-A)+'（总差 '+sg(r.sum-r.n*A)+'）</small></button>'});
+ $('rtab').innerHTML=h;
+}
+function drawNG(){
+ $('ngn').innerHTML=S.newG.length?S.newG.map((x,i)=>'<li>'+esc(x[0])+' '+x[1]+' <button data-g="'+i+'" aria-label="删除" style="border:0;background:none;color:var(--mu);cursor:pointer">×</button></li>').join(''):'<li>暂无</li>';
+ $('ngo').innerHTML=PR.map(x=>'<li>'+esc(x[0])+' '+x[1]+'</li>').join('');
+ const L=AP(),sel=Object.keys(S.gpick).filter(k=>L.some(x=>x[0]===k));
+ Object.keys(S.gpick).forEach(k=>{if(!sel.includes(k))delete S.gpick[k]});
+ $('gsel').innerHTML=sel.length?sel.map(k=>{const it=L.find(x=>x[0]===k),n=esc(k);return '<li class="on">'+n+' '+it[1]+' <button class="gb" data-gn="'+n+'" data-gd="-1" aria-label="减少">−</button><b>'+S.gpick[k]+'</b><button class="gb" data-gn="'+n+'" data-gd="1" aria-label="增加">＋</button><button class="gb" data-gn="'+n+'" data-gx="1" aria-label="移除">×</button></li>'}).join(''):'<li>还没有加入</li>';
+ const cn=sel.reduce((a,k)=>a+S.gpick[k],0);
+ $('gsum').textContent='✨ 所见大金 / 新金藏品（已加入 '+cn+' 件，点击展开）';
+ drawGoldRes();
+}
+function drawGoldRes(){
+ const q=$('gq').value.trim().toLowerCase(),box=$('gres');
+ if(!q){box.innerHTML='<li>输入名称或价格后，这里显示匹配的金藏品</li>';return}
+ const dig=/^\d+$/.test(q),dec=/^\d*\.\d+$/.test(q)?parseFloat(q):null;
+ const hit=AP().filter(x=>!S.gpick[x[0]]&&(x[0].toLowerCase().includes(q)||(dig&&String(x[1]).includes(q))||(dec!==null&&Math.abs(x[1]/10000-dec)<.05))).sort((a,b)=>b[1]-a[1]).slice(0,12);
+ box.innerHTML=hit.length?hit.map(x=>'<li><button class="gadd" data-ga="'+esc(x[0])+'">＋ '+esc(x[0])+' '+x[1]+'</button></li>').join(''):'<li>没有匹配的金藏品，可在下方新增</li>';
+}
+function addNG(){
+ const n=$('nn').value.trim(),v=parseFloat($('np').value),p=Math.round(v),K=t=>t.replace(/\s/g,'').toLowerCase();
+ if(!n||!Number.isFinite(v)||v<=0){$('nm').textContent='请填写名称和价格（完整数字）。';return}
+ const d=AP().find(x=>K(x[0])===K(n));
+ if(d){$('nm').textContent='重复：「'+d[0]+'」已在'+(PR.includes(d)?'过往':'新增')+'金藏品里。';return}
+ const q=AP().find(x=>x[1]===p);
+ if(q){$('nm').textContent='价格与「'+q[0]+'」完全相同，疑似重复，请核对。';return}
+ S.newG.push([n,p]);if(S.mode===1)runCalc();$('nn').value='';$('np').value='';$('nm').textContent='';save();update();
+}
 function update(){
  ui();
- const pk=all().filter(i=>Q(i[0])>0);
+ const m1=S.mode===1;
+ const pk=all().filter(i=>Q(i[0])>0&&(!m1||i[1]==='r'));
  const add=pk.reduce((s,i)=>s+i[2]*Q(i[0]),0),cnt=pk.reduce((s,i)=>s+Q(i[0]),0);
- $('sm').textContent=cnt?'已选 '+cnt+' 件：'+pk.map(i=>i[0]+(Q(i[0])>1?'×'+Q(i[0]):'')).join('、')+'，合计加 '+add+' 万':'还没选，看到大红或大金就点一下。';
+ $('sm').textContent=cnt?'已选 '+cnt+' 件：'+pk.map(i=>i[0]+(Q(i[0])>1?'×'+Q(i[0]):'')).join('、')+'，合计加 '+add+' 万':(m1?'还没选，看到大红就点一下。':'还没选，看到大红或大金就点一下。');
  const gr=(S.total!==null&&S.purple!==null)?S.total-S.purple:null;
- const bad=gr!==null&&gr<0,ok=gr!==null&&!bad,m=S.mult;
- const base=ok?gr*m:null;
- $('warn').textContent=bad?'紫件数大于紫金红总数，请检查两个读数。':'';
+ const bad=gr!==null&&gr<0,ok=gr!==null&&!bad,m=S.mult,A=S.avg;
+ if(RES&&RES.key!==rkey(gr,A))RES=null;
+ const raw=r=>r.sum/10000+(gr-r.n)*m+add;
+ const rows=m1&&RES?RES.c.slice().sort((a,b)=>raw(b)-raw(a)||a.id-b.id):[];
+ if(SEL>=0&&!rows.some(r=>r.id===SEL))SEL=-1;
+ const v1=ok&&(!m1||rows.length>0),R=Math.round;
+ let G=0,Rn=0;
+ if(rows.length){const q=SEL>=0?[rows.find(r=>r.id===SEL)]:rows;G=q.reduce((a,r)=>a+r.sum/10000,0)/q.length;Rn=q.reduce((a,r)=>a+gr-r.n,0)/q.length}
+ const calc=x=>m1?G+Rn*x:gr*x;
+ const base=v1?calc(m):null,E=v1?Math.round(base+add):null,w=[];
+ if(bad)w.push('紫件数大于紫金红总数，请检查两个读数。');
+ if(m1&&A!==null&&A<25000)w.push('金均低于 25000：严禁激进，出价已降一档。');
+ if(m1&&A!==null&&A>70000)w.push('金均高于 70000：红的预估可以抬高，可试 ×10。');
+ $('warn').textContent=w.join(' ');
  $('gr').textContent=ok?gr:'—';
- $('base').textContent=ok?base+' 万':'—';
+ $('bl').textContent=m1?'金总值 + 红总值（'+(SEL>=0?'所选方案':'方案平均')+'）':'金红均价（金红数 × 倍率）';
+ $('gv').textContent=v1&&m1?G.toFixed(2)+' 万':'—';
+ $('rc').textContent=v1&&m1?+Rn.toFixed(1)+' 件 × '+m+' = '+(Rn*m).toFixed(2)+' 万':'—';
+ $('full').textContent=v1&&m1?String(Math.round((base+add)*10000)):'—';
+ $('base').textContent=v1?(m1?base.toFixed(2):R(base))+' 万':'—';
  $('add').textContent=add+' 万';
- $('est').textContent=ok?base+add:'—';
- $('alt').textContent=ok?'×8 → '+(gr*8+add)+'　×10 → '+(gr*10+add):'—';
- $('fm').textContent=ok?'金红数 '+gr+'（'+S.total+' − '+S.purple+'）；金红均价 '+gr+' × '+m+' = '+base+'；加成 '+add+'；估价 '+base+' + '+add+' = '+(base+add)+'（万）':'填完紫金红总数和紫件计数器后自动计算，所选大红 / 大金的加成会一起加上。';
+ $('est').textContent=v1?E:'—';
+ $('alt').textContent=v1?'×8 → '+Math.round(calc(8)+add)+'　×10 → '+Math.round(calc(10)+add):'—';
+ $('fm').textContent=v1?(m1?'金总值 '+G.toFixed(2)+'；红 '+(+Rn.toFixed(1))+' × '+m+' = '+(Rn*m).toFixed(2)+'；加成 '+add+'；估价 '+E+' 万（完整 '+Math.round((base+add)*10000)+'）':'金红数 '+gr+'（'+S.total+' − '+S.purple+'）；金红均价 '+gr+' × '+m+' = '+base+'；加成 '+add+'；估价 '+base+' + '+add+' = '+E+'（万）'):(m1?'填完紫金红总数、紫件计数器和金均后，点「开始计算」。':'填完紫金红总数和紫件计数器后自动计算，所选大红 / 大金的加成会一起加上。');
+ $('combo').textContent=rows.length?'金均反推：共 '+rows.length+' 种方案，按估价从高到低排列，误差已标在每条里，见页面下方结果表，可点选一条作为最终估价。':'';
  $('chips').innerHTML=[8,10].map(x=>'<button class="chip'+(m===x?' on':'')+'" data-m="'+x+'">×'+x+'</button>').join('');
- drawItems();
- drawFluct(ok?base+add:null);
+ drawItems();drawRes(rows,gr,add,m);drawNG();
+ drawFluct(E);
 }
 const TN=['保守','稳妥','激进'];
 function drawFluct(E){
- const cap=S.cap===null?200:S.cap,pc=S.pct===null?80:S.pct,F=E===null?0:Math.min(cap,E,Math.round(E*pc/100)),h=Math.round(F/2);
- $('tn').textContent=TN[S.tier];$('fv').textContent=E===null?'—':F;
- if(E===null){$('bidv').textContent='—';$('chart').innerHTML='<p class="hint">填完紫金红总数和紫件计数器后显示。</p>';$('tiers').innerHTML='';$('bd').textContent='';return}
- const bids=[E-F,E-h,E],bid=bids[S.tier];
- const pts=[[-F,E-F],[-h,E-h],[0,E],[h,E+h],[F,E+F]];
- const hi=E+F,b=hi*1.12||1,X=i=>66+i*62,Y=v=>Math.round((160-v/b*126)*10)/10;
+ const m1=S.mode===1;
+ const F=E===null?0:m1?S.gf:Math.min(E,S.f0===null?Math.min(200,Math.round(E*.8)):S.f0),h=Math.round(F/2);
+ const low=m1&&S.avg!==null&&S.avg<25000,ti=low?Math.max(0,S.tier-1):S.tier;
+ $('tn').textContent=TN[ti];$('fv').textContent=E===null?'—':F;$('gfv').textContent=S.gf;$('gf0').value=F;$('gf0v').textContent=E===null?'—':F;
+ if(E===null){$('bidv').textContent='—';$('chart').innerHTML='<p class="hint">填完所需读数后显示。</p>';$('tiers').innerHTML='';$('bd').textContent='';return}
+ const bids=[E-F,E-h,E],bid=bids[ti];
+ const N=m1?9:5,mid=(N-1)/2,pts=[];
+ for(let i=0;i<N;i++){const o=i===mid?0:(i<mid?-1:1)*Math.round(F*Math.abs(i-mid)/mid);pts.push([o,E+o])}
+ const hi=E+F,b=hi*1.12||1,st=294/N,X=i=>42+st*(i+.5),bw=Math.min(40,st*.66),Y=v=>Math.round((160-v/b*126)*10)/10,fs=N>5?' style="font-size:10px"':'';
  let s='<svg viewBox="0 0 340 200" role="img" aria-label="估价浮动条形图">';
  [0,b/2,b].forEach(v=>{s+='<line class="cg" x1="42" x2="336" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="ct" x="38" y="'+(Y(v)+4)+'" text-anchor="end">'+Math.round(v)+'</text>'});
- pts.forEach((p,i)=>{const v=p[1],y=Y(v),k=i===2?'be':p[0]>0?'bu':'bd';s+='<rect class="'+k+'" x="'+(X(i)-20)+'" y="'+y+'" width="40" height="'+Math.max(0,160-y)+'" rx="4"/><text class="'+(i===2?'cev':'cv')+'" x="'+X(i)+'" y="'+(y-7)+'" text-anchor="middle">'+v+'</text><text class="'+(i===2?'cex':'ct')+'" x="'+X(i)+'" y="182" text-anchor="middle">'+(i===2?'当前估价':p[0]>0?'溢出 '+p[0]:'贬值 '+(-p[0]))+'</text>'});
+ pts.forEach((p,i)=>{const v=p[1],y=Y(v),c=i===mid,k=c?'be':p[0]>0?'bu':'bd',f=c?'':fs;
+  s+='<rect class="'+k+'" x="'+(X(i)-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+Math.max(0,160-y)+'" rx="4"/><text class="'+(c?'cev':'cv')+'"'+f+' x="'+X(i)+'" y="'+(y-7)+'" text-anchor="middle">'+v+'</text><text class="'+(c?'cex':'ct')+'"'+f+' x="'+X(i)+'" y="182" text-anchor="middle">'+(c?(N>5?'当前':'当前估价'):N>5?(p[0]>0?'+':'')+p[0]:p[0]>0?'溢出 '+p[0]:'贬值 '+(-p[0]))+'</text>'});
  s+='<line class="cb" x1="42" x2="336" y1="'+Y(bid)+'" y2="'+Y(bid)+'"/><line class="cb" x1="42" x2="62" y1="13" y2="13"/><text class="ctb" x="68" y="17">建议出价 '+bid+'</text><rect class="be" x="190" y="6" width="13" height="13" rx="3"/><text class="cex" x="208" y="17">当前估价 '+E+'</text>';
  $('chart').innerHTML=s+'</svg>';
  $('bidv').textContent=bid+' 万';
  $('tiers').innerHTML=bids.map((v,i)=>'<button class="tr'+(i===S.tier?' on':'')+'" data-t="'+i+'"><b>'+TN[i]+'</b><span>'+v+' 万</span></button>').join('');
  const r=v=>v>=0?'赚 '+v:'亏 '+(-v);
- $('bd').textContent='按'+TN[S.tier]+'出价 '+bid+' 万：贬值到 '+(E-F)+' 时'+r(E-F-bid)+'，估价 '+E+' 时'+r(E-bid)+'，溢出到 '+(E+F)+' 时'+r(E+F-bid)+'（万）。';
+ $('bd').textContent='按'+TN[ti]+'出价 '+bid+' 万：贬值到 '+(E-F)+' 时'+r(E-F-bid)+'，估价 '+E+' 时'+r(E-bid)+'，溢出到 '+(E+F)+' 时'+r(E+F-bid)+'（万）。';
 }
-function sync(){$('total').value=S.total===null?'':S.total;$('purple').value=S.purple===null?'':S.purple;$('cap').value=S.cap===null?'':S.cap;$('pct').value=S.pct===null?'':S.pct;update()}
+function sync(){$('total').value=S.total===null?'':S.total;$('purple').value=S.purple===null?'':S.purple;$('avg').value=S.avg===null?'':S.avg;$('gf').value=S.gf;update()}
 function addItem(){
  const n=$('cn').value.trim(),v=parseFloat($('cv').value);
  if(!n||!Number.isFinite(v)||v<0){$('am').textContent='请填写名称和加成（万）。';return}
  if(all().some(i=>i[0]===n)){$('am').textContent='这件已经在列表里了，直接点选即可。';return}
- S.custom.push([n,cc,Math.round(v)]);S.pick[n]=1;
+ S.custom.push([n,S.mode===1?'r':cc,Math.round(v)]);S.pick[n]=1;
  $('cn').value='';$('cv').value='';$('am').textContent='';save();update();
 }
 ['total','purple'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=num(e.target.value);save();update()}));
-$('cap').addEventListener('input',e=>{S.cap=num(e.target.value);save();update()});
-$('pct').addEventListener('input',e=>{S.pct=num(e.target.value);save();update()});
+$('gf0').addEventListener('input',e=>{S.f0=+e.target.value;save();update()});
+$('avg').addEventListener('input',e=>{const x=parseFloat(e.target.value);S.avg=Number.isFinite(x)&&x>=0?x:null;save();update()});
+$('gq').addEventListener('input',drawGoldRes);
+$('gf').addEventListener('input',e=>{S.gf=+e.target.value;save();update()});
 document.addEventListener('click',e=>{
  const t=e.target.closest('button');if(!t)return;
+ let auto=false;
  const d=t.dataset;
  if(d.k){S[d.k]=Math.max(0,(S[d.k]||0)+parseInt(d.d,10));$(d.k).value=S[d.k];}
  else if(d.n!==undefined){if(d.q){const q=Q(d.n)+parseInt(d.q,10);if(q>0)S.pick[d.n]=Math.min(q,99);else delete S.pick[d.n];}else if(Q(d.n))delete S.pick[d.n];else S.pick[d.n]=1;}
  else if(d.x!==undefined){S.custom=S.custom.filter(c=>c[0]!==d.x);delete S.pick[d.x];}
  else if(d.m){S.mult=+d.m;}
  else if(d.th){theme(d.th);}
+ else if(d.md!==undefined){S.mode=+d.md;}
  else if(d.ly!==undefined){S.flip=+d.ly;}
  else if(d.t!==undefined){S.tier=+d.t;}
  else if(d.c){cc=d.c;document.querySelectorAll('.cc button').forEach(b=>b.classList.toggle('on',b.dataset.c===cc));return;}
+ else if(t.id==='nok'){try{localStorage.setItem('dafu-notice','1')}catch(x){}$('notice').hidden=true;return}
  else if(t.id==='go'){addItem();return}
- else if(d.r!==undefined){S.total=null;S.purple=null;S.pick={};S.mult=8;sync();}
+ else if(t.id==='ng'){addNG();return}
+ else if(t.id==='calc'){t.textContent='计算中…';t.disabled=true;setTimeout(()=>{const o=runCalc();t.disabled=false;t.textContent='开始计算';$('cm').textContent=o===true?'':(typeof o==='string'?o:'请先填好紫金红总数、紫件计数器（金红数至少为 1）和金均。');update()},30);return}
+ else if(d.s!==undefined){SEL=+d.s}
+ else if(d.g!==undefined){const g=S.newG[+d.g];if(g)delete S.gpick[g[0]];S.newG.splice(+d.g,1);auto=true}
+ else if(d.ga!==undefined){if(!S.gpick[d.ga])S.gpick[d.ga]=1;auto=true}
+ else if(d.gx!==undefined){delete S.gpick[d.gn];auto=true}
+ else if(d.gd!==undefined){const q=(S.gpick[d.gn]||0)+parseInt(d.gd,10);if(q>0)S.gpick[d.gn]=Math.min(q,3);else delete S.gpick[d.gn];auto=true}
+ else if(d.r!==undefined){S.total=null;S.purple=null;S.pick={};S.gpick={};S.mult=8;S.avg=null;RES=null;SEL=-1;S.f0=null;sync();}
  else return;
+ if(auto&&S.mode===1){const o=runCalc();$('cm').textContent=typeof o==='string'?o:''}
  save();update();
 });
+try{if(localStorage.getItem('dafu-notice')==='1')$('notice').hidden=true}catch(e){}
 sync();
 </script>
 </body>
